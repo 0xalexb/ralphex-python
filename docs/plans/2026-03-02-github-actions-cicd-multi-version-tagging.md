@@ -50,18 +50,18 @@ For repo release `v1.0.0`, ralphex version `v0.5.2`, Python versions 3.11/3.12/3
 **Files:**
 - Create: `.github/workflows/build-publish.yml`
 
-- [ ] Define workflow triggers:
+- [x] Define workflow triggers:
   - `release: types: [published]` for this repo's releases
   - `workflow_dispatch` with optional `ralphex_version` input (for upstream-triggered rebuilds)
-- [ ] Extract this repo's version from the release tag (strip `v` prefix); for dispatch triggers, fetch latest release tag via GitHub API
-- [ ] Resolve ralphex version: use `workflow_dispatch` input if provided, otherwise fetch latest release from `umputun/ralphex` via GitHub API
-- [ ] Set up matrix strategy for Python versions: [3.11, 3.12, 3.13]
-- [ ] Use `docker/login-action` to authenticate with GHCR using `GITHUB_TOKEN`
-- [ ] Use `docker/setup-buildx-action` for buildx
-- [ ] Use `docker/build-push-action` to build and push with build args (`PYTHON_VERSION`, `RALPHEX_VERSION`)
-- [ ] Generate tags per matrix entry: fully pinned `<ver>-r<ralphex>-py<python>`, floating `r<ralphex>-py<python>`, floating `py<python>`
-- [ ] For the latest Python (3.13), also tag `latest`
-- [ ] Set GHCR package permissions in workflow (`packages: write`)
+- [x] Extract this repo's version from the release tag (strip `v` prefix); for dispatch triggers, fetch latest release tag via GitHub API
+- [x] Resolve ralphex version: use `workflow_dispatch` input if provided, otherwise fetch latest release from `umputun/ralphex` via GitHub API
+- [x] Set up matrix strategy for Python versions: [3.11, 3.12, 3.13]
+- [x] Use `docker/login-action` to authenticate with GHCR using `GITHUB_TOKEN`
+- [x] Use `docker/setup-buildx-action` for buildx
+- [x] Use `docker/build-push-action` to build and push with build args (`PYTHON_VERSION`, `RALPHEX_VERSION`)
+- [x] Generate tags per matrix entry: fully pinned `<ver>-r<ralphex>-py<python>`, floating `r<ralphex>-py<python>`, floating `py<python>`
+- [x] For the latest Python (3.13), also tag `latest`
+- [x] Set GHCR package permissions in workflow (`packages: write`)
 
 ### Task 3: Create upstream release check workflow
 
