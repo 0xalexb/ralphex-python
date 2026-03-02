@@ -80,11 +80,11 @@ For repo release `v1.0.0`, ralphex version `v0.5.2`, Python versions 3.11/3.12/3
 **Files:**
 - Modify: `Makefile`
 
-- [ ] Add optional `VERSION` variable for local versioned builds
-- [ ] Add optional `RALPHEX_VERSION` variable (default: latest)
-- [ ] Pass `RALPHEX_VERSION` as build arg in build targets
-- [ ] When VERSION is set, also tag images as `$(DOCKER_IMAGE):<version>-r<ralphex>-py<python>`
-- [ ] Update `push` target to push versioned tags when VERSION is set
+- [x] Add optional `VERSION` variable for local versioned builds
+- [x] Add optional `RALPHEX_VERSION` variable (default: latest)
+- [x] Pass `RALPHEX_VERSION` as build arg in build targets
+- [x] When VERSION is set, also tag images as `$(DOCKER_IMAGE):<version>-r<ralphex>-py<python>`
+- [x] Update `push` target to push versioned tags when VERSION is set
 
 ### Task 5: Update README
 
