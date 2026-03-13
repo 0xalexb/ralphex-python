@@ -21,6 +21,14 @@ on:
         description: "UV version (e.g. v0.10.6). If omitted, fetches latest from astral-sh/uv."
         required: false
         type: string
+      composer_version:
+        description: "Composer version (e.g. 2.8.8). If omitted, fetches latest from composer/composer."
+        required: false
+        type: string
+      phpstan_version:
+        description: "PHPStan version (e.g. 2.1.14). If omitted, fetches latest from phpstan/phpstan."
+        required: false
+        type: string
 
 concurrency:
   group: build-publish
@@ -40,6 +48,8 @@ jobs:
       claude_code_version: ${{ steps.claude-code-version.outputs.version }}
       codex_version: ${{ steps.codex-version.outputs.version }}
       uv_version: ${{ steps.uv-version.outputs.version }}
+      composer_version: ${{ steps.composer-version.outputs.version }}
+      phpstan_version: ${{ steps.phpstan-version.outputs.version }}
     steps:
       - name: Resolve repo version
         id: repo-version
@@ -125,6 +135,40 @@ jobs:
           fi
           if [ -z "${TAG}" ]; then
             echo "::error::Failed to resolve UV version"
+            exit 1
+          fi
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve Composer version
+        id: composer-version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_COMPOSER_VERSION: ${{ inputs.composer_version }}
+        run: |
+          if [ -n "${INPUT_COMPOSER_VERSION}" ]; then
+            TAG="${INPUT_COMPOSER_VERSION}"
+          else
+            TAG=$(gh api "repos/composer/composer/releases/latest" --jq '.tag_name')
+          fi
+          if [ -z "${TAG}" ]; then
+            echo "::error::Failed to resolve Composer version"
+            exit 1
+          fi
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve PHPStan version
+        id: phpstan-version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_PHPSTAN_VERSION: ${{ inputs.phpstan_version }}
+        run: |
+          if [ -n "${INPUT_PHPSTAN_VERSION}" ]; then
+            TAG="${INPUT_PHPSTAN_VERSION}"
+          else
+            TAG=$(gh api "repos/phpstan/phpstan/releases/latest" --jq '.tag_name')
+          fi
+          if [ -z "${TAG}" ]; then
+            echo "::error::Failed to resolve PHPStan version"
             exit 1
           fi
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
@@ -234,8 +278,66 @@ jobs:
             CLAUDE_CODE_VERSION=${{ needs.resolve-versions.outputs.claude_code_version }}
             CODEX_VERSION=${{ needs.resolve-versions.outputs.codex_version }}
 
+  build-php:
+    needs: resolve-versions
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php_version: ["8.3", "8.4", "8.5"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ needs.resolve-versions.outputs.repo_tag }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate tags
+        id: tags
+        env:
+          REPO_VER: ${{ needs.resolve-versions.outputs.repo_version }}
+          RALPHEX_VER: ${{ needs.resolve-versions.outputs.ralphex_version }}
+          PHP_VER: ${{ matrix.php_version }}
+        run: |
+          IMAGE="ghcr.io/0xalexb/ralphex-php"
+
+          TAGS="${IMAGE}:${REPO_VER}-r${RALPHEX_VER}-php${PHP_VER}"
+          TAGS="${TAGS},${IMAGE}:r${RALPHEX_VER}-php${PHP_VER}"
+          TAGS="${TAGS},${IMAGE}:php${PHP_VER}"
+          if [ "${PHP_VER}" = "8.5" ]; then
+            TAGS="${TAGS},${IMAGE}:latest"
+          fi
+
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: docker-php/
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.tags.outputs.tags }}
+          build-args: |
+            PHP_VERSION=${{ matrix.php_version }}
+            RALPHEX_VERSION=${{ needs.resolve-versions.outputs.ralphex_version }}
+            COMPOSER_VERSION=${{ needs.resolve-versions.outputs.composer_version }}
+            PHPSTAN_VERSION=${{ needs.resolve-versions.outputs.phpstan_version }}
+            CLAUDE_CODE_VERSION=${{ needs.resolve-versions.outputs.claude_code_version }}
+            CODEX_VERSION=${{ needs.resolve-versions.outputs.codex_version }}
+
   update-tracked-versions:
-    needs: [resolve-versions, build-python, build-go]
+    needs: [resolve-versions, build-python, build-go, build-php]
     runs-on: ubuntu-latest
     steps:
       - name: Update stored versions
@@ -246,6 +348,8 @@ jobs:
           CLAUDE_CODE_VER: ${{ needs.resolve-versions.outputs.claude_code_version }}
           CODEX_VER: ${{ needs.resolve-versions.outputs.codex_version }}
           UV_VER: ${{ needs.resolve-versions.outputs.uv_version }}
+          COMPOSER_VER: ${{ needs.resolve-versions.outputs.composer_version }}
+          PHPSTAN_VER: ${{ needs.resolve-versions.outputs.phpstan_version }}
         run: |
           # Define variable updates: var_name|value
           UPDATES=(
@@ -253,6 +357,8 @@ jobs:
             "CLAUDE_CODE_UPSTREAM_VERSION|v${CLAUDE_CODE_VER}"
             "CODEX_UPSTREAM_VERSION|v${CODEX_VER}"
             "UV_UPSTREAM_VERSION|v${UV_VER}"
+            "COMPOSER_UPSTREAM_VERSION|v${COMPOSER_VER}"
+            "PHPSTAN_UPSTREAM_VERSION|v${PHPSTAN_VER}"
           )
 
           for UPDATE in "${UPDATES[@]}"; do
