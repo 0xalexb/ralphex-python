@@ -31,6 +31,8 @@ jobs:
             "claude-code|anthropics/claude-code|CLAUDE_CODE_UPSTREAM_VERSION"
             "codex|openai/codex|CODEX_UPSTREAM_VERSION"
             "uv|astral-sh/uv|UV_UPSTREAM_VERSION"
+            "composer|composer/composer|COMPOSER_UPSTREAM_VERSION"
+            "phpstan|phpstan/phpstan|PHPSTAN_UPSTREAM_VERSION"
           )
 
           for TOOL_DEF in "${TOOLS[@]}"; do
@@ -81,6 +83,8 @@ jobs:
           CLAUDE_CODE_VER: ${{ steps.versions.outputs.claude_code_version }}
           CODEX_VER: ${{ steps.versions.outputs.codex_version }}
           UV_VER: ${{ steps.versions.outputs.uv_version }}
+          COMPOSER_VER: ${{ steps.versions.outputs.composer_version }}
+          PHPSTAN_VER: ${{ steps.versions.outputs.phpstan_version }}
         run: |
           ARGS=""
           if [ -n "${RALPHEX_VER}" ]; then
@@ -95,8 +99,14 @@ jobs:
           if [ -n "${UV_VER}" ]; then
             ARGS="${ARGS} --field uv_version=${UV_VER}"
           fi
+          if [ -n "${COMPOSER_VER}" ]; then
+            ARGS="${ARGS} --field composer_version=${COMPOSER_VER}"
+          fi
+          if [ -n "${PHPSTAN_VER}" ]; then
+            ARGS="${ARGS} --field phpstan_version=${PHPSTAN_VER}"
+          fi
 
           gh workflow run build-publish.yml \
             --repo "${REPO}" \
             ${ARGS}
-          echo "Triggered build-publish with versions: ralphex=${RALPHEX_VER} claude-code=${CLAUDE_CODE_VER} codex=${CODEX_VER} uv=${UV_VER}"
+          echo "Triggered build-publish with versions: ralphex=${RALPHEX_VER} claude-code=${CLAUDE_CODE_VER} codex=${CODEX_VER} uv=${UV_VER} composer=${COMPOSER_VER} phpstan=${PHPSTAN_VER}"

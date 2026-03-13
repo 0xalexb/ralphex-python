@@ -1,11 +1,12 @@
 # ralphex-images
 
-Docker images extending the [ralphex](https://github.com/umputun/ralphex) family of Alpine-based dev images. This repository builds and publishes two images:
+Docker images extending the [ralphex](https://github.com/umputun/ralphex) family of Alpine-based dev images. This repository builds and publishes three images:
 
 | Image | Registry | Base | Adds |
 |-------|----------|------|------|
 | **ralphex-python** | `ghcr.io/0xalexb/ralphex-python` | [umputun/ralphex](https://github.com/umputun/ralphex) | jq, UV, ruff, Python 3.11/3.12/3.13 |
 | **ralphex-go** | `ghcr.io/0xalexb/ralphex-go` | [umputun/ralphex-go](https://github.com/umputun/ralphex-go) | jq |
+| **ralphex-php** | `ghcr.io/0xalexb/ralphex-php` | [umputun/ralphex](https://github.com/umputun/ralphex) | jq, Composer, PHPStan, PHP 8.3/8.4/8.5 |
 
 ## Python Image
 
@@ -79,6 +80,49 @@ COPY . /workspace
 RUN go build ./...
 ```
 
+## PHP Image
+
+Extends ralphex with [jq](https://jqlang.github.io/jq/) (JSON processor), [Composer](https://getcomposer.org/) (PHP dependency manager), and [PHPStan](https://phpstan.org/) (static analysis). Each variant includes a specific PHP version installed via Alpine packages.
+
+### Tags
+
+| Tag Pattern | Example | Description |
+|---|---|---|
+| `<ver>-r<ralphex>-php<php>` | `1.0.0-r0.5.2-php8.5` | Fully pinned: repo + ralphex + PHP |
+| `r<ralphex>-php<php>` | `r0.5.2-php8.5` | Floating repo version |
+| `php<php>` | `php8.5` | Floating: latest repo + latest ralphex |
+| `latest` | `latest` | Points to PHP 8.5 |
+
+### What's Included
+
+From the base image (`ghcr.io/umputun/ralphex`):
+- Node.js, npm
+- make, gcc, musl-dev
+- git, bash
+- ripgrep, fzf
+- Claude Code, Codex
+
+Added by this image:
+- jq - JSON processor
+- Composer - PHP dependency manager
+- PHPStan - PHP static analysis tool
+- PHP version matching the image tag
+
+### Usage
+
+```
+docker pull ghcr.io/0xalexb/ralphex-php:php8.5
+docker run --rm -it ghcr.io/0xalexb/ralphex-php:php8.5 bash
+```
+
+As a base image:
+
+```dockerfile
+FROM ghcr.io/0xalexb/ralphex-php:php8.5
+COPY . /workspace
+RUN composer install
+```
+
 ## CI/CD
 
 Docker images are built and published to GHCR automatically:
@@ -118,6 +162,18 @@ Build only the Go image:
 
 ```
 make build-go
+```
+
+Build all PHP variants:
+
+```
+make build-php
+```
+
+Build a single PHP variant:
+
+```
+make build-one-php PHP_VERSION=8.5
 ```
 
 Push all images:
