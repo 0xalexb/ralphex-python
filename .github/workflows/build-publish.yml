@@ -29,6 +29,10 @@ on:
         description: "PHPStan version (e.g. 2.1.14). If omitted, fetches latest from phpstan/phpstan."
         required: false
         type: string
+      go_version:
+        description: "Go version (e.g. 1.26.1). If omitted, fetches latest stable from go.dev."
+        required: false
+        type: string
 
 concurrency:
   group: build-publish
@@ -50,6 +54,7 @@ jobs:
       uv_version: ${{ steps.uv-version.outputs.version }}
       composer_version: ${{ steps.composer-version.outputs.version }}
       phpstan_version: ${{ steps.phpstan-version.outputs.version }}
+      go_version: ${{ steps.go-version.outputs.version }}
     steps:
       - name: Resolve repo version
         id: repo-version
@@ -173,6 +178,22 @@ jobs:
           fi
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
 
+      - name: Resolve Go version
+        id: go-version
+        env:
+          INPUT_GO_VERSION: ${{ inputs.go_version }}
+        run: |
+          if [ -n "${INPUT_GO_VERSION}" ]; then
+            VERSION="${INPUT_GO_VERSION#v}"
+          else
+            VERSION=$(curl -sL 'https://go.dev/dl/?mode=json' | jq -r '.[0].version' | sed 's/^go//')
+          fi
+          if [ -z "${VERSION}" ]; then
+            echo "::error::Failed to resolve Go version"
+            exit 1
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
   build-python:
     needs: resolve-versions
     runs-on: ubuntu-latest
@@ -256,12 +277,12 @@ jobs:
         id: tags
         env:
           REPO_VER: ${{ needs.resolve-versions.outputs.repo_version }}
-          RALPHEX_GO_VER: ${{ needs.resolve-versions.outputs.ralphex_version }}
+          RALPHEX_VER: ${{ needs.resolve-versions.outputs.ralphex_version }}
         run: |
           IMAGE="ghcr.io/0xalexb/ralphex-go"
 
-          TAGS="${IMAGE}:${REPO_VER}-r${RALPHEX_GO_VER}"
-          TAGS="${TAGS},${IMAGE}:r${RALPHEX_GO_VER}"
+          TAGS="${IMAGE}:${REPO_VER}-r${RALPHEX_VER}"
+          TAGS="${TAGS},${IMAGE}:r${RALPHEX_VER}"
           TAGS="${TAGS},${IMAGE}:latest"
 
           echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
@@ -274,7 +295,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.tags.outputs.tags }}
           build-args: |
-            RALPHEX_GO_VERSION=${{ needs.resolve-versions.outputs.ralphex_version }}
+            RALPHEX_VERSION=${{ needs.resolve-versions.outputs.ralphex_version }}
+            GO_VERSION=${{ needs.resolve-versions.outputs.go_version }}
             CLAUDE_CODE_VERSION=${{ needs.resolve-versions.outputs.claude_code_version }}
             CODEX_VERSION=${{ needs.resolve-versions.outputs.codex_version }}
 
@@ -350,6 +372,7 @@ jobs:
           UV_VER: ${{ needs.resolve-versions.outputs.uv_version }}
           COMPOSER_VER: ${{ needs.resolve-versions.outputs.composer_version }}
           PHPSTAN_VER: ${{ needs.resolve-versions.outputs.phpstan_version }}
+          GO_VER: ${{ needs.resolve-versions.outputs.go_version }}
         run: |
           # Define variable updates: var_name|value
           UPDATES=(
@@ -359,6 +382,7 @@ jobs:
             "UV_UPSTREAM_VERSION|v${UV_VER}"
             "COMPOSER_UPSTREAM_VERSION|v${COMPOSER_VER}"
             "PHPSTAN_UPSTREAM_VERSION|v${PHPSTAN_VER}"
+            "GO_UPSTREAM_VERSION|v${GO_VER}"
           )
 
           for UPDATE in "${UPDATES[@]}"; do

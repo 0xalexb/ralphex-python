@@ -3,6 +3,7 @@ GO_IMAGE ?= ghcr.io/0xalexb/ralphex-go
 PHP_IMAGE ?= ghcr.io/0xalexb/ralphex-php
 UV_VERSION ?= 0.10.6
 RUFF_VERSION ?= 0.15.3
+GO_VERSION ?= 1.26.1
 RALPHEX_VERSION ?= latest
 CLAUDE_CODE_VERSION ?= latest
 CODEX_VERSION ?= latest
@@ -78,7 +79,8 @@ build-go: setup-buildx
 	docker buildx build \
 		--platform $(NATIVE_PLATFORM) \
 		--load \
-		--build-arg RALPHEX_GO_VERSION=$(RALPHEX_VERSION) \
+		--build-arg RALPHEX_VERSION=$(RALPHEX_VERSION) \
+		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg CLAUDE_CODE_VERSION=$(CLAUDE_CODE_VERSION) \
 		--build-arg CODEX_VERSION=$(CODEX_VERSION) \
 		$$TAGS \
@@ -159,7 +161,8 @@ push-go: setup-buildx
 	docker buildx build \
 		--platform $(PLATFORMS) \
 		--push \
-		--build-arg RALPHEX_GO_VERSION=$(RALPHEX_VERSION) \
+		--build-arg RALPHEX_VERSION=$(RALPHEX_VERSION) \
+		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg CLAUDE_CODE_VERSION=$(CLAUDE_CODE_VERSION) \
 		--build-arg CODEX_VERSION=$(CODEX_VERSION) \
 		$$TAGS \

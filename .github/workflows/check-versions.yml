@@ -33,6 +33,7 @@ jobs:
             "uv|astral-sh/uv|UV_UPSTREAM_VERSION"
             "composer|composer/composer|COMPOSER_UPSTREAM_VERSION"
             "phpstan|phpstan/phpstan|PHPSTAN_UPSTREAM_VERSION"
+            "go|go.dev|GO_UPSTREAM_VERSION"
           )
 
           for TOOL_DEF in "${TOOLS[@]}"; do
@@ -41,6 +42,8 @@ jobs:
             # Fetch latest release tag
             if [ "${NAME}" = "codex" ]; then
               LATEST=$(npm view @openai/codex version 2>/dev/null || true)
+            elif [ "${NAME}" = "go" ]; then
+              LATEST="v$(curl -sL 'https://go.dev/dl/?mode=json' | jq -r '.[0].version' | sed 's/^go//')"
             else
               LATEST=$(gh api "repos/${UPSTREAM_REPO}/releases/latest" --jq '.tag_name' 2>/dev/null || true)
             fi
@@ -85,6 +88,7 @@ jobs:
           UV_VER: ${{ steps.versions.outputs.uv_version }}
           COMPOSER_VER: ${{ steps.versions.outputs.composer_version }}
           PHPSTAN_VER: ${{ steps.versions.outputs.phpstan_version }}
+          GO_VER: ${{ steps.versions.outputs.go_version }}
         run: |
           ARGS=""
           if [ -n "${RALPHEX_VER}" ]; then
@@ -105,8 +109,11 @@ jobs:
           if [ -n "${PHPSTAN_VER}" ]; then
             ARGS="${ARGS} --field phpstan_version=${PHPSTAN_VER}"
           fi
+          if [ -n "${GO_VER}" ]; then
+            ARGS="${ARGS} --field go_version=${GO_VER}"
+          fi
 
           gh workflow run build-publish.yml \
             --repo "${REPO}" \
             ${ARGS}
-          echo "Triggered build-publish with versions: ralphex=${RALPHEX_VER} claude-code=${CLAUDE_CODE_VER} codex=${CODEX_VER} uv=${UV_VER} composer=${COMPOSER_VER} phpstan=${PHPSTAN_VER}"
+          echo "Triggered build-publish with versions: ralphex=${RALPHEX_VER} claude-code=${CLAUDE_CODE_VER} codex=${CODEX_VER} uv=${UV_VER} composer=${COMPOSER_VER} phpstan=${PHPSTAN_VER} go=${GO_VER}"
