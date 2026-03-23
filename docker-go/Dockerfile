@@ -23,8 +23,8 @@ RUN wget -qO- https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/inst
     GOBIN=/usr/local/bin go install golang.org/x/tools/cmd/goimports@latest && \
     GOBIN=/usr/local/bin go install github.com/daixiang0/gci@latest
 
-# install jq
-RUN apk add --no-cache jq
+# install jq and yq
+RUN apk add --no-cache bash jq yq
 
 # install claude code and codex
 ARG CLAUDE_CODE_VERSION=latest
@@ -32,4 +32,4 @@ ARG CODEX_VERSION=latest
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION}
 
 # verify installations
-RUN go version && golangci-lint --version && moq --help 2>&1 | head -1 && goimports --help 2>&1 | head -1 && gci --version && jq --version && claude --version && codex --version
+RUN go version && golangci-lint --version && moq --help 2>&1 | head -1 && goimports --help 2>&1 | head -1 && gci --version && jq --version && yq --version && claude --version && codex --version

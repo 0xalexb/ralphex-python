@@ -32,8 +32,8 @@ ARG CLAUDE_CODE_VERSION=latest
 ARG CODEX_VERSION=latest
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION}
 
-# install jq
-RUN apk add --no-cache jq
+# install jq and yq
+RUN apk add --no-cache bash jq yq
 
 # verify installations
-RUN jq --version && uv --version && ruff --version && uv run python --version && claude --version && codex --version
+RUN jq --version && yq --version && uv --version && ruff --version && uv run python --version && claude --version && codex --version
