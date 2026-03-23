@@ -21,7 +21,9 @@ RUN PHP_SHORT=$(echo ${PHP_VERSION} | tr -d '.') && \
         php${PHP_SHORT}-xmlwriter \
         php${PHP_SHORT}-tokenizer \
         php${PHP_SHORT}-simplexml \
-        jq && \
+        bash \
+        jq \
+        yq && \
     ln -sf /usr/bin/php${PHP_SHORT} /usr/local/bin/php
 
 # install composer
@@ -41,4 +43,4 @@ ARG CODEX_VERSION=latest
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION}
 
 # verify installations
-RUN php --version && composer --version && phpstan --version && jq --version && claude --version && codex --version
+RUN php --version && composer --version && phpstan --version && jq --version && yq --version && claude --version && codex --version

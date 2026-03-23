@@ -6,9 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Docker image repository that builds three images extending the [ralphex](https://github.com/umputun/ralphex) family of Alpine-based dev images:
 
-- **ralphex-python** (`ghcr.io/0xalexb/ralphex-python`) - Multi-platform (linux/amd64, linux/arm64). Extends ralphex with jq, UV, ruff, Claude Code, Codex, and multiple Python versions (3.11, 3.12, 3.13)
-- **ralphex-go** (`ghcr.io/0xalexb/ralphex-go`) - Multi-platform (linux/amd64, linux/arm64). Extends ralphex with Go (from official binaries), golangci-lint, moq, goimports, gci, jq, Claude Code, and Codex
-- **ralphex-php** (`ghcr.io/0xalexb/ralphex-php`) - Multi-platform (linux/amd64, linux/arm64). Extends ralphex with jq, Composer, PHPStan, Claude Code, Codex, and multiple PHP versions (8.3, 8.4, 8.5)
+- **ralphex-python** (`ghcr.io/0xalexb/ralphex-python`) - Multi-platform (linux/amd64, linux/arm64). Extends ralphex with jq, yq, UV, ruff, Claude Code, Codex, and multiple Python versions (3.11, 3.12, 3.13)
+- **ralphex-go** (`ghcr.io/0xalexb/ralphex-go`) - Multi-platform (linux/amd64, linux/arm64). Extends ralphex with Go (from official binaries), golangci-lint, moq, goimports, gci, jq, yq, Claude Code, and Codex
+- **ralphex-php** (`ghcr.io/0xalexb/ralphex-php`) - Multi-platform (linux/amd64, linux/arm64). Extends ralphex with jq, yq, Composer, PHPStan, Claude Code, Codex, and multiple PHP versions (8.3, 8.4, 8.5)
 
 ## Build Commands
 
