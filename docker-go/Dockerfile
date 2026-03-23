@@ -17,10 +17,11 @@ ENV PATH="${PATH}:${GOROOT}/bin:${GOPATH}/bin"
 RUN printf 'export GOROOT=/usr/local/go\nexport GOPATH=/home/app/go\nexport PATH="${PATH}:/usr/local/go/bin:/home/app/go/bin"\n' \
     > /etc/profile.d/go-env.sh
 
-# install go dev tools (golangci-lint, moq, goimports)
+# install go dev tools (golangci-lint, moq, goimports, gci)
 RUN wget -qO- https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b /usr/local/bin && \
     GOBIN=/usr/local/bin go install github.com/matryer/moq@latest && \
-    GOBIN=/usr/local/bin go install golang.org/x/tools/cmd/goimports@latest
+    GOBIN=/usr/local/bin go install golang.org/x/tools/cmd/goimports@latest && \
+    GOBIN=/usr/local/bin go install github.com/daixiang0/gci@latest
 
 # install jq
 RUN apk add --no-cache jq
@@ -31,4 +32,4 @@ ARG CODEX_VERSION=latest
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION}
 
 # verify installations
-RUN go version && golangci-lint --version && moq --help 2>&1 | head -1 && goimports --help 2>&1 | head -1 && jq --version && claude --version && codex --version
+RUN go version && golangci-lint --version && moq --help 2>&1 | head -1 && goimports --help 2>&1 | head -1 && gci --version && jq --version && claude --version && codex --version
