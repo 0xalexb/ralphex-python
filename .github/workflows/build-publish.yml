@@ -294,6 +294,8 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=gha,scope=go
+          cache-to: type=gha,scope=go,mode=max
           build-args: |
             RALPHEX_VERSION=${{ needs.resolve-versions.outputs.ralphex_version }}
             GO_VERSION=${{ needs.resolve-versions.outputs.go_version }}
