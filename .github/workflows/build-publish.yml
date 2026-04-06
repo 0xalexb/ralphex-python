@@ -153,7 +153,8 @@ jobs:
           if [ -n "${INPUT_COMPOSER_VERSION}" ]; then
             TAG="${INPUT_COMPOSER_VERSION}"
           else
-            TAG=$(gh api "repos/composer/composer/releases/latest" --jq '.tag_name')
+            # Skip pre-release/RC versions
+            TAG=$(gh api "repos/composer/composer/releases" --jq '[.[] | select(.prerelease == false) | .tag_name] | .[0]')
           fi
           if [ -z "${TAG}" ]; then
             echo "::error::Failed to resolve Composer version"
