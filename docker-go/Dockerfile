@@ -26,10 +26,11 @@ RUN wget -qO- https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/inst
 # install jq and yq
 RUN apk add --no-cache bash jq yq
 
-# install claude code and codex
+# install claude code, codex, and pi
 ARG CLAUDE_CODE_VERSION=latest
 ARG CODEX_VERSION=latest
-RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION}
+ARG PI_VERSION=latest
+RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION} @mariozechner/pi-coding-agent@${PI_VERSION}
 
 # verify installations
-RUN go version && golangci-lint --version && moq --help 2>&1 | head -1 && goimports --help 2>&1 | head -1 && gci --version && jq --version && yq --version && claude --version && codex --version
+RUN go version && golangci-lint --version && moq --help 2>&1 | head -1 && goimports --help 2>&1 | head -1 && gci --version && jq --version && yq --version && claude --version && codex --version && pi --version

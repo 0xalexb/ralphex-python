@@ -34,6 +34,7 @@ jobs:
             "composer|composer/composer|COMPOSER_UPSTREAM_VERSION"
             "phpstan|phpstan/phpstan|PHPSTAN_UPSTREAM_VERSION"
             "go|go.dev|GO_UPSTREAM_VERSION"
+            "pi|badlogic/pi-mono|PI_UPSTREAM_VERSION"
           )
 
           for TOOL_DEF in "${TOOLS[@]}"; do
@@ -96,6 +97,7 @@ jobs:
           COMPOSER_VER: ${{ steps.versions.outputs.composer_version }}
           PHPSTAN_VER: ${{ steps.versions.outputs.phpstan_version }}
           GO_VER: ${{ steps.versions.outputs.go_version }}
+          PI_VER: ${{ steps.versions.outputs.pi_version }}
         run: |
           ARGS=""
           if [ -n "${RALPHEX_VER}" ]; then
@@ -119,8 +121,11 @@ jobs:
           if [ -n "${GO_VER}" ]; then
             ARGS="${ARGS} --field go_version=${GO_VER}"
           fi
+          if [ -n "${PI_VER}" ]; then
+            ARGS="${ARGS} --field pi_version=${PI_VER}"
+          fi
 
           gh workflow run build-publish.yml \
             --repo "${REPO}" \
             ${ARGS}
-          echo "Triggered build-publish with versions: ralphex=${RALPHEX_VER} claude-code=${CLAUDE_CODE_VER} codex=${CODEX_VER} uv=${UV_VER} composer=${COMPOSER_VER} phpstan=${PHPSTAN_VER} go=${GO_VER}"
+          echo "Triggered build-publish with versions: ralphex=${RALPHEX_VER} claude-code=${CLAUDE_CODE_VER} codex=${CODEX_VER} uv=${UV_VER} composer=${COMPOSER_VER} phpstan=${PHPSTAN_VER} go=${GO_VER} pi=${PI_VER}"

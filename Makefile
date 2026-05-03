@@ -7,6 +7,7 @@ GO_VERSION ?= 1.26.1
 RALPHEX_VERSION ?= latest
 CLAUDE_CODE_VERSION ?= latest
 CODEX_VERSION ?= latest
+PI_VERSION ?= latest
 PYTHON_VERSIONS := 3.11 3.12 3.13
 LATEST_PYTHON := 3.13
 PHP_VERSIONS := 8.3 8.4 8.5
@@ -44,6 +45,7 @@ build-python: setup-buildx
 			--build-arg RALPHEX_VERSION=$(RALPHEX_VERSION) \
 			--build-arg CLAUDE_CODE_VERSION=$(CLAUDE_CODE_VERSION) \
 			--build-arg CODEX_VERSION=$(CODEX_VERSION) \
+			--build-arg PI_VERSION=$(PI_VERSION) \
 			$$TAGS \
 			docker-python/ || exit 1; \
 	done
@@ -67,6 +69,7 @@ build-one: setup-buildx
 		--build-arg RALPHEX_VERSION=$(RALPHEX_VERSION) \
 		--build-arg CLAUDE_CODE_VERSION=$(CLAUDE_CODE_VERSION) \
 		--build-arg CODEX_VERSION=$(CODEX_VERSION) \
+		--build-arg PI_VERSION=$(PI_VERSION) \
 		$$TAGS \
 		docker-python/
 
@@ -83,6 +86,7 @@ build-go: setup-buildx
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg CLAUDE_CODE_VERSION=$(CLAUDE_CODE_VERSION) \
 		--build-arg CODEX_VERSION=$(CODEX_VERSION) \
+		--build-arg PI_VERSION=$(PI_VERSION) \
 		$$TAGS \
 		docker-go/
 
@@ -103,6 +107,7 @@ build-php: setup-buildx
 			--build-arg RALPHEX_VERSION=$(RALPHEX_VERSION) \
 			--build-arg CLAUDE_CODE_VERSION=$(CLAUDE_CODE_VERSION) \
 			--build-arg CODEX_VERSION=$(CODEX_VERSION) \
+			--build-arg PI_VERSION=$(PI_VERSION) \
 			$$TAGS \
 			docker-php/ || exit 1; \
 	done
@@ -124,6 +129,7 @@ build-one-php: setup-buildx
 		--build-arg RALPHEX_VERSION=$(RALPHEX_VERSION) \
 		--build-arg CLAUDE_CODE_VERSION=$(CLAUDE_CODE_VERSION) \
 		--build-arg CODEX_VERSION=$(CODEX_VERSION) \
+		--build-arg PI_VERSION=$(PI_VERSION) \
 		$$TAGS \
 		docker-php/
 
@@ -148,6 +154,7 @@ push-python: setup-buildx
 			--build-arg RALPHEX_VERSION=$(RALPHEX_VERSION) \
 			--build-arg CLAUDE_CODE_VERSION=$(CLAUDE_CODE_VERSION) \
 			--build-arg CODEX_VERSION=$(CODEX_VERSION) \
+			--build-arg PI_VERSION=$(PI_VERSION) \
 			$$TAGS \
 			docker-python/ || exit 1; \
 	done
@@ -165,6 +172,7 @@ push-go: setup-buildx
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg CLAUDE_CODE_VERSION=$(CLAUDE_CODE_VERSION) \
 		--build-arg CODEX_VERSION=$(CODEX_VERSION) \
+		--build-arg PI_VERSION=$(PI_VERSION) \
 		$$TAGS \
 		docker-go/
 
@@ -185,6 +193,7 @@ push-php: setup-buildx
 			--build-arg RALPHEX_VERSION=$(RALPHEX_VERSION) \
 			--build-arg CLAUDE_CODE_VERSION=$(CLAUDE_CODE_VERSION) \
 			--build-arg CODEX_VERSION=$(CODEX_VERSION) \
+			--build-arg PI_VERSION=$(PI_VERSION) \
 			$$TAGS \
 			docker-php/ || exit 1; \
 	done

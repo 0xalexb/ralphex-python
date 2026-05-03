@@ -30,7 +30,7 @@ From the base image (`ghcr.io/umputun/ralphex`):
 - make, gcc, musl-dev
 - git, bash
 - ripgrep, fzf
-- Claude Code, Codex
+- Claude Code, Codex, Pi
 
 Added by this image:
 - jq - JSON processor
@@ -100,7 +100,7 @@ From the base image (`ghcr.io/umputun/ralphex`):
 - make, gcc, musl-dev
 - git, bash
 - ripgrep, fzf
-- Claude Code, Codex
+- Claude Code, Codex, Pi
 
 Added by this image:
 - jq - JSON processor
