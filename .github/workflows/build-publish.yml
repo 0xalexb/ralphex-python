@@ -33,6 +33,10 @@ on:
         description: "Go version (e.g. 1.26.1). If omitted, fetches latest stable from go.dev."
         required: false
         type: string
+      pi_version:
+        description: "Pi version (e.g. v0.72.1). If omitted, fetches latest from badlogic/pi-mono."
+        required: false
+        type: string
 
 concurrency:
   group: build-publish
@@ -55,6 +59,7 @@ jobs:
       composer_version: ${{ steps.composer-version.outputs.version }}
       phpstan_version: ${{ steps.phpstan-version.outputs.version }}
       go_version: ${{ steps.go-version.outputs.version }}
+      pi_version: ${{ steps.pi-version.outputs.version }}
     steps:
       - name: Resolve repo version
         id: repo-version
@@ -195,6 +200,23 @@ jobs:
           fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
+      - name: Resolve Pi version
+        id: pi-version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_PI_VERSION: ${{ inputs.pi_version }}
+        run: |
+          if [ -n "${INPUT_PI_VERSION}" ]; then
+            TAG="${INPUT_PI_VERSION}"
+          else
+            TAG=$(gh api "repos/badlogic/pi-mono/releases/latest" --jq '.tag_name')
+          fi
+          if [ -z "${TAG}" ]; then
+            echo "::error::Failed to resolve Pi version"
+            exit 1
+          fi
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
   build-python:
     needs: resolve-versions
     runs-on: ubuntu-latest
@@ -251,6 +273,7 @@ jobs:
             UV_VERSION=${{ needs.resolve-versions.outputs.uv_version }}
             CLAUDE_CODE_VERSION=${{ needs.resolve-versions.outputs.claude_code_version }}
             CODEX_VERSION=${{ needs.resolve-versions.outputs.codex_version }}
+            PI_VERSION=${{ needs.resolve-versions.outputs.pi_version }}
 
   build-go:
     needs: resolve-versions
@@ -302,6 +325,7 @@ jobs:
             GO_VERSION=${{ needs.resolve-versions.outputs.go_version }}
             CLAUDE_CODE_VERSION=${{ needs.resolve-versions.outputs.claude_code_version }}
             CODEX_VERSION=${{ needs.resolve-versions.outputs.codex_version }}
+            PI_VERSION=${{ needs.resolve-versions.outputs.pi_version }}
 
   build-php:
     needs: resolve-versions
@@ -360,6 +384,7 @@ jobs:
             PHPSTAN_VERSION=${{ needs.resolve-versions.outputs.phpstan_version }}
             CLAUDE_CODE_VERSION=${{ needs.resolve-versions.outputs.claude_code_version }}
             CODEX_VERSION=${{ needs.resolve-versions.outputs.codex_version }}
+            PI_VERSION=${{ needs.resolve-versions.outputs.pi_version }}
 
   update-tracked-versions:
     needs: [resolve-versions, build-python, build-go, build-php]
@@ -376,6 +401,7 @@ jobs:
           COMPOSER_VER: ${{ needs.resolve-versions.outputs.composer_version }}
           PHPSTAN_VER: ${{ needs.resolve-versions.outputs.phpstan_version }}
           GO_VER: ${{ needs.resolve-versions.outputs.go_version }}
+          PI_VER: ${{ needs.resolve-versions.outputs.pi_version }}
         run: |
           # Define variable updates: var_name|value
           UPDATES=(
@@ -386,6 +412,7 @@ jobs:
             "COMPOSER_UPSTREAM_VERSION|v${COMPOSER_VER}"
             "PHPSTAN_UPSTREAM_VERSION|v${PHPSTAN_VER}"
             "GO_UPSTREAM_VERSION|v${GO_VER}"
+            "PI_UPSTREAM_VERSION|v${PI_VER}"
           )
 
           for UPDATE in "${UPDATES[@]}"; do

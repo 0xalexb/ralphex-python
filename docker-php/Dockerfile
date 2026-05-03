@@ -37,10 +37,11 @@ RUN if [ "${COMPOSER_VERSION}" = "latest-stable" ]; then \
 RUN curl -sLo /usr/local/bin/phpstan https://github.com/phpstan/phpstan/releases/download/${PHPSTAN_VERSION}/phpstan.phar && \
     chmod +x /usr/local/bin/phpstan
 
-# install claude code and codex
+# install claude code, codex, and pi
 ARG CLAUDE_CODE_VERSION=latest
 ARG CODEX_VERSION=latest
-RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION}
+ARG PI_VERSION=latest
+RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION} @mariozechner/pi-coding-agent@${PI_VERSION}
 
 # verify installations
-RUN php --version && composer --version && phpstan --version && jq --version && yq --version && claude --version && codex --version
+RUN php --version && composer --version && phpstan --version && jq --version && yq --version && claude --version && codex --version && pi --version

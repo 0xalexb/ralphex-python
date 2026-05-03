@@ -27,13 +27,14 @@ RUN uv python install ${PYTHON_VERSION}
 # install ruff globally
 RUN uv tool install ruff==${RUFF_VERSION}
 
-# install claude code and codex
+# install claude code, codex, and pi
 ARG CLAUDE_CODE_VERSION=latest
 ARG CODEX_VERSION=latest
-RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION}
+ARG PI_VERSION=latest
+RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION} @mariozechner/pi-coding-agent@${PI_VERSION}
 
 # install jq and yq
 RUN apk add --no-cache bash jq yq
 
 # verify installations
-RUN jq --version && yq --version && uv --version && ruff --version && uv run python --version && claude --version && codex --version
+RUN jq --version && yq --version && uv --version && ruff --version && uv run python --version && claude --version && codex --version && pi --version
