@@ -41,7 +41,7 @@ RUN curl -sLo /usr/local/bin/phpstan https://github.com/phpstan/phpstan/releases
 ARG CLAUDE_CODE_VERSION=latest
 ARG CODEX_VERSION=latest
 ARG PI_VERSION=latest
-RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION} @mariozechner/pi-coding-agent@${PI_VERSION}
+RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION} @earendil-works/pi-coding-agent@${PI_VERSION}
 
 # verify installations
 RUN php --version && composer --version && phpstan --version && jq --version && yq --version && claude --version && codex --version && pi --version

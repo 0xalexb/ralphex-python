@@ -34,7 +34,7 @@ on:
         required: false
         type: string
       pi_version:
-        description: "Pi version (e.g. v0.72.1). If omitted, fetches latest from badlogic/pi-mono."
+        description: "Pi version (e.g. v0.72.1). If omitted, fetches latest from earendil-works/pi."
         required: false
         type: string
 
@@ -209,7 +209,7 @@ jobs:
           if [ -n "${INPUT_PI_VERSION}" ]; then
             TAG="${INPUT_PI_VERSION}"
           else
-            TAG=$(gh api "repos/badlogic/pi-mono/releases/latest" --jq '.tag_name')
+            TAG=$(gh api "repos/earendil-works/pi/releases/latest" --jq '.tag_name')
           fi
           if [ -z "${TAG}" ]; then
             echo "::error::Failed to resolve Pi version"

@@ -34,7 +34,7 @@ jobs:
             "composer|composer/composer|COMPOSER_UPSTREAM_VERSION"
             "phpstan|phpstan/phpstan|PHPSTAN_UPSTREAM_VERSION"
             "go|go.dev|GO_UPSTREAM_VERSION"
-            "pi|badlogic/pi-mono|PI_UPSTREAM_VERSION"
+            "pi|earendil-works/pi|PI_UPSTREAM_VERSION"
           )
 
           for TOOL_DEF in "${TOOLS[@]}"; do

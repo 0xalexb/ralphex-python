@@ -30,7 +30,7 @@ RUN apk add --no-cache bash jq yq
 ARG CLAUDE_CODE_VERSION=latest
 ARG CODEX_VERSION=latest
 ARG PI_VERSION=latest
-RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION} @mariozechner/pi-coding-agent@${PI_VERSION}
+RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION} @earendil-works/pi-coding-agent@${PI_VERSION}
 
 # verify installations
 RUN go version && golangci-lint --version && moq --help 2>&1 | head -1 && goimports --help 2>&1 | head -1 && gci --version && jq --version && yq --version && claude --version && codex --version && pi --version
