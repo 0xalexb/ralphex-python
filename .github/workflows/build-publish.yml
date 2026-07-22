@@ -1,42 +1,9 @@
 name: Build and Publish
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch:
-    inputs:
-      ralphex_version:
-        description: "Ralphex version (e.g. v0.5.2). If omitted, fetches latest from umputun/ralphex."
-        required: false
-        type: string
-      claude_code_version:
-        description: "Claude Code version (e.g. v1.0.0). If omitted, fetches latest from anthropics/claude-code."
-        required: false
-        type: string
-      codex_version:
-        description: "Codex version (e.g. v0.1.0). If omitted, fetches latest from openai/codex."
-        required: false
-        type: string
-      uv_version:
-        description: "UV version (e.g. v0.10.6). If omitted, fetches latest from astral-sh/uv."
-        required: false
-        type: string
-      composer_version:
-        description: "Composer version (e.g. 2.8.8). If omitted, fetches latest from composer/composer."
-        required: false
-        type: string
-      phpstan_version:
-        description: "PHPStan version (e.g. 2.1.14). If omitted, fetches latest from phpstan/phpstan."
-        required: false
-        type: string
-      go_version:
-        description: "Go version (e.g. 1.26.1). If omitted, fetches latest stable from go.dev."
-        required: false
-        type: string
-      pi_version:
-        description: "Pi version (e.g. v0.72.1). If omitted, fetches latest from earendil-works/pi."
-        required: false
-        type: string
+  push:
+    tags:
+      - "v*"
 
 concurrency:
   group: build-publish
@@ -65,15 +32,10 @@ jobs:
         id: repo-version
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          EVENT_NAME: ${{ github.event_name }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-          REPO: ${{ github.repository }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if [ "${EVENT_NAME}" = "release" ]; then
-            TAG="${RELEASE_TAG}"
-          else
-            TAG=$(gh api "repos/${REPO}/releases/latest" --jq '.tag_name')
-          fi
+          # Workflow is tag-triggered; github.ref_name is the pushed tag.
+          TAG="${REF_NAME}"
           if [ -z "${TAG}" ]; then
             echo "::error::Failed to resolve repo version"
             exit 1
@@ -548,55 +510,3 @@ jobs:
       - name: Inspect image
         run: |
           docker buildx imagetools inspect "${{ steps.tags.outputs.image }}:${{ needs.resolve-versions.outputs.repo_version }}-r${{ needs.resolve-versions.outputs.ralphex_version }}-php${{ matrix.php_version }}"
-
-  update-tracked-versions:
-    needs: [resolve-versions, merge-python, merge-go, merge-php]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Update stored versions
-        env:
-          GH_TOKEN: ${{ secrets.ACTIONS_VARS_TOKEN }}
-          REPO: ${{ github.repository }}
-          RALPHEX_VER: ${{ needs.resolve-versions.outputs.ralphex_version }}
-          CLAUDE_CODE_VER: ${{ needs.resolve-versions.outputs.claude_code_version }}
-          CODEX_VER: ${{ needs.resolve-versions.outputs.codex_version }}
-          UV_VER: ${{ needs.resolve-versions.outputs.uv_version }}
-          COMPOSER_VER: ${{ needs.resolve-versions.outputs.composer_version }}
-          PHPSTAN_VER: ${{ needs.resolve-versions.outputs.phpstan_version }}
-          GO_VER: ${{ needs.resolve-versions.outputs.go_version }}
-          PI_VER: ${{ needs.resolve-versions.outputs.pi_version }}
-        run: |
-          # Define variable updates: var_name|value
-          UPDATES=(
-            "RALPHEX_UPSTREAM_VERSION|v${RALPHEX_VER}"
-            "CLAUDE_CODE_UPSTREAM_VERSION|v${CLAUDE_CODE_VER}"
-            "CODEX_UPSTREAM_VERSION|v${CODEX_VER}"
-            "UV_UPSTREAM_VERSION|v${UV_VER}"
-            "COMPOSER_UPSTREAM_VERSION|v${COMPOSER_VER}"
-            "PHPSTAN_UPSTREAM_VERSION|v${PHPSTAN_VER}"
-            "GO_UPSTREAM_VERSION|v${GO_VER}"
-            "PI_UPSTREAM_VERSION|v${PI_VER}"
-          )
-
-          for UPDATE in "${UPDATES[@]}"; do
-            IFS='|' read -r VAR_NAME VAR_VALUE <<< "${UPDATE}"
-
-            if ! PATCH_OUTPUT=$(gh api \
-              --method PATCH \
-              "repos/${REPO}/actions/variables/${VAR_NAME}" \
-              --field name="${VAR_NAME}" \
-              --field value="${VAR_VALUE}" 2>&1); then
-              if echo "${PATCH_OUTPUT}" | grep -q "Not Found"; then
-                echo "Variable ${VAR_NAME} not found, creating it"
-                gh api \
-                  --method POST \
-                  "repos/${REPO}/actions/variables" \
-                  --field name="${VAR_NAME}" \
-                  --field value="${VAR_VALUE}"
-              else
-                echo "::error::Failed to update variable ${VAR_NAME}: ${PATCH_OUTPUT}"
-                exit 1
-              fi
-            fi
-            echo "Updated ${VAR_NAME} to: ${VAR_VALUE}"
-          done

@@ -125,18 +125,15 @@ RUN composer install
 
 ## CI/CD
 
-Docker images are built and published to GHCR automatically:
+Docker images are built and published to GHCR by tag only:
 
-- **On repo release**: when a new GitHub release is published, both images are built and pushed with the full set of tags.
-- **On upstream release**: a daily check (6 AM UTC) monitors both [umputun/ralphex](https://github.com/umputun/ralphex) and [umputun/ralphex-go](https://github.com/umputun/ralphex-go). When either upstream publishes a new version, a rebuild is triggered for both images.
+- **On tag push**: pushing a `v*` tag (e.g. `v1.2.0`) builds all images and pushes them with the full set of tags. The repo version is taken from the tag; each bundled tool is resolved to its latest upstream release at build time.
 
-Both workflows can be triggered manually from the GitHub Actions UI. The build-publish workflow accepts optional `ralphex_version` and `ralphex_go_version` inputs.
+Each architecture is built on its own native runner (amd64 on `ubuntu-latest`, arm64 on `ubuntu-24.04-arm`) and combined into a multi-arch manifest — no QEMU emulation. There are no scheduled/cron builds.
 
 ### Required Secrets
 
-| Secret | Purpose |
-|--------|---------|
-| `ACTIONS_VARS_TOKEN` | PAT with `repo` scope (or fine-grained `variables:write`). Used to update upstream version repo variables and trigger build-publish from the upstream check. |
+The build uses only the default `GITHUB_TOKEN` (granted `packages: write`); no additional secrets are required.
 
 ## Build
 

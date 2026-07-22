@@ -44,8 +44,7 @@ There are no tests or linters in this repo. Verification is done by each Dockerf
 - **docker-go/Dockerfile** - Extends `ghcr.io/umputun/ralphex`, installs Go from official binaries with arch detection, installs Go dev tools (golangci-lint, moq, goimports), installs jq via apk, installs Claude Code, Codex, and Pi via npm. Build args: `RALPHEX_VERSION`, `GO_VERSION`, `CLAUDE_CODE_VERSION`, `CODEX_VERSION`, `PI_VERSION`.
 - **docker-php/Dockerfile** - Extends `ghcr.io/umputun/ralphex`, installs PHP via apk (versioned packages), Composer via installer, PHPStan via PHAR download, installs Claude Code, Codex, and Pi via npm. Build args: `RALPHEX_VERSION`, `PHP_VERSION`, `COMPOSER_VERSION`, `PHPSTAN_VERSION`, `CLAUDE_CODE_VERSION`, `CODEX_VERSION`, `PI_VERSION`.
 - **Makefile** - Builds all three images using `docker buildx`. `build` targets use native platform with `--load` for local dev; `push` targets build multi-platform (`linux/amd64,linux/arm64`) with `--push`. `setup-buildx` creates a `docker-container` driver builder. Python: loops over `PYTHON_VERSIONS := 3.11 3.12 3.13`. Go: single build. PHP: loops over `PHP_VERSIONS := 8.3 8.4 8.5`. All use `RALPHEX_VERSION` for the upstream version. Targets: `build-python`/`push-python`, `build-go`/`push-go`, `build-php`/`push-php`, `build`/`push` (all).
-- **.github/workflows/build-publish.yml** - Triggered on GitHub release or manual dispatch. Resolves repo version + all tool versions (ralphex, Claude Code, Codex, UV, Composer, PHPStan, Go, Pi), then builds each image (Python and PHP variants via matrix, plus Go) for linux/amd64 and linux/arm64 on **native runners** (amd64 on `ubuntu-latest`, arm64 on `ubuntu-24.04-arm`) — no QEMU emulation. Each arch is pushed by digest, and a per-image `merge-*` job combines the digests into a multi-arch manifest with the final tags. Native builds fixed the constant multi-arch failures where npm crashed with SIGILL ("Illegal instruction", exit 132) under QEMU. Finally, `update-tracked-versions` updates all tracked version variables.
-- **.github/workflows/check-versions.yml** - Daily cron (6 AM UTC) checks for new releases of ralphex, Claude Code, Codex, UV, Composer, PHPStan, Go, and Pi. If any version changed, triggers build-publish with all current versions.
+- **.github/workflows/build-publish.yml** - Triggered only by pushing a `v*` tag (`on: push: tags`). The repo version comes from the pushed tag; all tool versions (ralphex, Claude Code, Codex, UV, Composer, PHPStan, Go, Pi) are resolved to their latest upstream release. It then builds each image (Python and PHP variants via matrix, plus Go) for linux/amd64 and linux/arm64 on **native runners** (amd64 on `ubuntu-latest`, arm64 on `ubuntu-24.04-arm`) — no QEMU emulation. Each arch is pushed by digest, and a per-image `merge-*` job combines the digests into a multi-arch manifest with the final tags. Native builds fixed the constant multi-arch failures where npm crashed with SIGILL ("Illegal instruction", exit 132) under QEMU.
 
 ## Tag Scheme
 
@@ -58,10 +57,9 @@ There are no tests or linters in this repo. Verification is done by each Dockerf
 ## Conventions
 
 - GitHub Actions use pinned commit SHAs for all third-party actions.
-- `ACTIONS_VARS_TOKEN` secret (PAT with `repo` scope) is required for CI workflows.
+- Builds are tag-triggered only: push a `v*` tag to build and publish. No scheduled/cron builds. The default `GITHUB_TOKEN` (with `packages: write`) is the only secret needed.
 - Completed plans go in `docs/plans/completed/`.
 - UV and ruff default versions are set as `ARG` defaults in `docker-python/Dockerfile`; update them there for version bumps.
 - Composer and PHPStan default versions are set as `ARG` defaults in `docker-php/Dockerfile`; update them there for version bumps.
 - Go default version is set as `ARG` default in `docker-go/Dockerfile`; update it there for version bumps.
-- Claude Code, Codex, and Pi default to `latest` in all Dockerfiles; specific versions can be pinned via build args or CI inputs.
-- Auto-update tracks 8 tools via GitHub repo variables: `RALPHEX_UPSTREAM_VERSION`, `CLAUDE_CODE_UPSTREAM_VERSION`, `CODEX_UPSTREAM_VERSION`, `UV_UPSTREAM_VERSION`, `COMPOSER_UPSTREAM_VERSION`, `PHPSTAN_UPSTREAM_VERSION`, `GO_UPSTREAM_VERSION`, `PI_UPSTREAM_VERSION`.
+- Claude Code, Codex, and Pi default to `latest` in all Dockerfiles; specific versions can be pinned via build args for local builds.
